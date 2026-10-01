@@ -26,7 +26,8 @@ const DEFAULT_DATA = {
     registry: [],
     questionnaires: [],
     blRecruitments: [],
-    blId: []
+    blId: [],
+    accounts: []
 };
 
 /* ========== STORAGE: local | github ========== */
@@ -185,9 +186,21 @@ function setSyncStatus(mode) {
 }
 
 /* ========== AUTH ========== */
+function getAllUsers() {
+    const extra = (getData().accounts || []).map(a => ({
+        login: a.login,
+        password: a.password,
+        name: a.name,
+        role: a.role,
+        department: a.department || null,
+        custom: true
+    }));
+    return [...ACCESS_USERS, ...extra];
+}
+
 function tryLogin(login, password) {
-    const u = ACCESS_USERS.find(x => x.login === login && x.password === password);
-    return u ? { login: u.login, name: u.name, role: u.role, department: u.department } : null;
+    const u = getAllUsers().find(x => x.login === login && x.password === password);
+    return u ? { login: u.login, name: u.name, role: u.role, department: u.department || null } : null;
 }
 function saveSession(u) { sessionStorage.setItem(SESSION_KEY, JSON.stringify(u)); }
 function loadSession() { try { return JSON.parse(sessionStorage.getItem(SESSION_KEY)); } catch { return null; } }
@@ -237,10 +250,10 @@ function actionBtns(section, index) {
     let h = '';
     const canEdit = hasPerm('edit', section) || (section === 'news' && hasPerm('manageNews')) ||
         (section === 'ranks' && hasPerm('manageRanks')) || (section === 'members' && hasPerm('manageMembers')) ||
-        (section === 'academy' && hasPerm('manageAcademy'));
+        (section === 'academy' && hasPerm('manageAcademy')) || (section === 'accounts' && hasPerm('manageUsers'));
     const canDel = hasPerm('delete', section) || (section === 'news' && hasPerm('manageNews')) ||
         (section === 'ranks' && hasPerm('manageRanks')) || (section === 'members' && hasPerm('manageMembers')) ||
-        (section === 'academy' && hasPerm('manageAcademy'));
+        (section === 'academy' && hasPerm('manageAcademy')) || (section === 'accounts' && hasPerm('manageUsers'));
     if (canEdit) h += `<button class="btn-ghost btn-ghost-edit" onclick="editItem('${section}',${index})" title="Изменить">✏️</button>`;
     if (canDel) h += `<button class="btn-ghost" onclick="deleteItem('${section}',${index})" title="Удалить">🗑️</button>`;
     return h ? `<div class="td-actions">${h}</div>` : '—';
@@ -354,6 +367,13 @@ function renderAll() {
     renderTable('blid-tbody', d.blId, (r, i) => `
         <td>${i + 1}</td><td>${esc(r.id)}</td><td>${esc(r.nick) || '—'}</td><td>${esc(r.reason)}</td>
         <td>${esc(r.from)}</td><td>${esc(r.date)}</td><td>${termCell(r.term)}</td><td>${actionBtns('bl-id', i)}</td>`);
+
+    // Accounts (leader)
+    renderTable('accounts-tbody', d.accounts, (r, i) => `
+        <td>${i + 1}</td><td><code>${esc(r.login)}</code></td><td>${esc(r.name)}</td>
+        <td>${esc(ROLE_LABELS[r.role] || r.role)}</td><td>${esc(deptName(r.department))}</td>
+        <td>${esc(r.createdBy) || '—'}</td><td>${esc(r.date) || '—'}</td>
+        <td>${currentUser && currentUser.role === 'leader' ? actionBtns('accounts', i) : '—'}</td>`);
 }
 
 /* ========== FORMS ========== */
@@ -458,11 +478,21 @@ const FORMS = {
         { name: 'id', label: 'ID', type: 'text' }, { name: 'nick', label: 'Ник', type: 'text' },
         { name: 'reason', label: 'Причина', type: 'textarea' }, { name: 'from', label: 'Кто добавил', type: 'text' },
         { name: 'date', label: 'Дата', type: 'date' }, { name: 'term', label: 'Срок', type: 'text', placeholder: '14 дней / Бессрочно' }
+    ]},
+    account: { title: 'Зарегистрировать аккаунт', section: 'accounts', dataKey: 'accounts', fields: [
+        { name: 'login', label: 'Логин (для входа)', type: 'text' },
+        { name: 'password', label: 'Пароль', type: 'text' },
+        { name: 'name', label: 'Ник в игре', type: 'text' },
+        { name: 'role', label: 'Роль на сайте', type: 'select', options: ['agent', 'curator', 'deputy', 'leader'],
+          optionLabels: ['Фибовец', 'Куратор', 'Зам. директора', 'Лидер'] },
+        { name: 'department', label: 'Отдел (для куратора)', type: 'select',
+          options: ['', 'id', 'inv', 'ciu', 'training'],
+          optionLabels: ['—', 'ID', 'Следственный', 'CIU', 'Обучение'] }
     ]}
 };
 
 const SECTION_TO_FORM = {
-    news: 'news', members: 'member', callsigns: 'callsign', ranks: 'rank',
+    news: 'news', members: 'member', callsigns: 'callsign', ranks: 'rank', accounts: 'account',
     academy: 'academyMember', interviews: 'interview', reports: 'report',
     recommendations: 'rec', recruitments: 'recruit', registry: 'registry',
     questionnaires: 'quest', 'bl-recruitments': 'blrec', 'bl-id': 'blid'
@@ -470,7 +500,7 @@ const SECTION_TO_FORM = {
 
 // Special: academy sub-forms share section 'academy' but different dataKeys — edit needs care
 const DATAKEY_BY_SECTION = {
-    news: 'news', members: 'members', callsigns: 'callsigns', ranks: 'rankHistory',
+    news: 'news', members: 'members', callsigns: 'callsigns', ranks: 'rankHistory', accounts: 'accounts',
     interviews: 'interviews', reports: 'reports', recommendations: 'recommendations',
     recruitments: 'recruitments', registry: 'registry', questionnaires: 'questionnaires',
     'bl-recruitments': 'blRecruitments', 'bl-id': 'blId'
@@ -552,6 +582,27 @@ async function submitModal() {
         if (!values.date) values.date = new Date().toLocaleDateString('ru-RU');
     }
 
+    if (currentForm.dataKey === 'accounts') {
+        if (!values.login || !values.password || !values.name) {
+            alert('Логин, пароль и ник обязательны');
+            return;
+        }
+        if (currentUser.role !== 'leader') {
+            alert('Только лидер может регистрировать аккаунты');
+            return;
+        }
+        const dataCheck = getData();
+        const existsBuiltIn = ACCESS_USERS.some(u => u.login === values.login);
+        const existsCustom = (dataCheck.accounts || []).some((u, i) => u.login === values.login && i !== editIndex);
+        if (existsBuiltIn || existsCustom) {
+            alert('Такой логин уже занят');
+            return;
+        }
+        values.createdBy = currentUser.name;
+        values.date = new Date().toLocaleDateString('ru-RU');
+        if (!values.department) values.department = '';
+    }
+
     const data = getData();
     const key = currentForm.dataKey;
     if (!data[key]) data[key] = [];
@@ -621,6 +672,117 @@ async function deleteItem(section, index) {
     renderAll();
 }
 
+
+/* ========== THEME / PERSONALIZE ========== */
+const THEME_KEY = 'fib_winslow14_theme';
+
+const THEME_DEFAULTS = {
+    theme: 'default',
+    nameGrad: 'none',
+    navGrad: 'soft',
+    compact: false,
+    animations: true
+};
+
+function loadThemePrefs() {
+    try {
+        return { ...THEME_DEFAULTS, ...JSON.parse(localStorage.getItem(THEME_KEY) || '{}') };
+    } catch (e) {
+        return { ...THEME_DEFAULTS };
+    }
+}
+
+function saveThemePrefs(p) {
+    localStorage.setItem(THEME_KEY, JSON.stringify(p));
+}
+
+function applyTheme(prefs) {
+    const p = prefs || loadThemePrefs();
+    const body = document.body;
+    body.className = body.className
+        .split(/\s+/)
+        .filter(c => c && !c.startsWith('theme-') && !c.startsWith('nav-') && c !== 'compact-nav' && c !== 'no-anim')
+        .join(' ');
+    if (p.theme && p.theme !== 'default') body.classList.add('theme-' + p.theme);
+    if (p.navGrad === 'bold') body.classList.add('nav-bold');
+    if (p.navGrad === 'glow') body.classList.add('nav-glow');
+    if (p.navGrad === 'underline') body.classList.add('nav-underline');
+    if (p.compact) body.classList.add('compact-nav');
+    if (!p.animations) body.classList.add('no-anim');
+
+    const nameEl = document.getElementById('header-name');
+    if (nameEl) {
+        nameEl.className = 'user-name name-gradient';
+        if (p.nameGrad && p.nameGrad !== 'none') nameEl.classList.add('name-grad-' + p.nameGrad);
+    }
+    const preview = document.getElementById('name-preview');
+    if (preview) {
+        preview.className = 'theme-preview';
+        if (p.nameGrad && p.nameGrad !== 'none') preview.classList.add('name-grad-' + p.nameGrad, 'user-name');
+        if (currentUser) preview.textContent = currentUser.name;
+    }
+    document.querySelectorAll('#theme-presets .theme-swatch').forEach(b => {
+        b.classList.toggle('active', b.dataset.theme === p.theme);
+    });
+    document.querySelectorAll('#name-gradients .theme-swatch').forEach(b => {
+        b.classList.toggle('active', b.dataset.namegrad === p.nameGrad);
+    });
+    document.querySelectorAll('#nav-gradients .theme-swatch').forEach(b => {
+        b.classList.toggle('active', b.dataset.navgrad === p.navGrad);
+    });
+    const c = document.getElementById('opt-compact');
+    const a = document.getElementById('opt-animations');
+    if (c) c.checked = !!p.compact;
+    if (a) a.checked = p.animations !== false;
+}
+
+function initThemeUI() {
+    applyTheme();
+    document.querySelectorAll('#theme-presets .theme-swatch').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const p = loadThemePrefs();
+            p.theme = btn.dataset.theme;
+            saveThemePrefs(p);
+            applyTheme(p);
+        });
+    });
+    document.querySelectorAll('#name-gradients .theme-swatch').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const p = loadThemePrefs();
+            p.nameGrad = btn.dataset.namegrad;
+            saveThemePrefs(p);
+            applyTheme(p);
+        });
+    });
+    document.querySelectorAll('#nav-gradients .theme-swatch').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const p = loadThemePrefs();
+            p.navGrad = btn.dataset.navgrad;
+            saveThemePrefs(p);
+            applyTheme(p);
+        });
+    });
+    const c = document.getElementById('opt-compact');
+    const a = document.getElementById('opt-animations');
+    if (c) c.addEventListener('change', () => {
+        const p = loadThemePrefs();
+        p.compact = c.checked;
+        saveThemePrefs(p);
+        applyTheme(p);
+    });
+    if (a) a.addEventListener('change', () => {
+        const p = loadThemePrefs();
+        p.animations = a.checked;
+        saveThemePrefs(p);
+        applyTheme(p);
+    });
+    const reset = document.getElementById('btn-reset-theme');
+    if (reset) reset.addEventListener('click', () => {
+        saveThemePrefs({ ...THEME_DEFAULTS });
+        applyTheme(THEME_DEFAULTS);
+    });
+}
+
 /* ========== UI ========== */
 function initTabs() {
     document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -663,7 +825,11 @@ function showApp(user) {
     document.getElementById('app').classList.remove('hidden');
     document.getElementById('header-name').textContent = user.name;
     document.getElementById('header-role').textContent = ROLE_LABELS[user.role] || user.role;
+    document.querySelectorAll('.leader-only').forEach(el => {
+        el.classList.toggle('hidden', user.role !== 'leader');
+    });
     applyPermissions();
+    applyTheme();
     renderAll();
 }
 
@@ -704,6 +870,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadData();
     initTabs();
     initFilters();
+    initThemeUI();
     initAuth();
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 });
