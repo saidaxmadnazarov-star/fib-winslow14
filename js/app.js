@@ -1,7 +1,7 @@
-/* FIB Winslow 14 — Full App with shared storage */
+/* FBI Winslow 14 — Full App with shared storage */
 
-const STORAGE_KEY = 'fib_winslow14_data_v2';
-const SESSION_KEY = 'fib_winslow14_session';
+const STORAGE_KEY = 'fbi_winslow14_data_v2';
+const SESSION_KEY = 'fbi_winslow14_session';
 
 let currentUser = null;
 let currentForm = null;
@@ -111,7 +111,7 @@ async function saveData(data) {
         try {
             const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
             const body = {
-                message: 'FIB update by ' + (currentUser ? currentUser.name : 'system'),
+                message: 'FBI update by ' + (currentUser ? currentUser.name : 'system'),
                 content: content,
                 branch: GITHUB.branch
             };
@@ -473,7 +473,7 @@ const FORMS = {
     roleRequest: { title: 'Запрос роли', section: 'academy', dataKey: 'roleRequests', fields: [
         { name: 'nick', label: 'Ник', type: 'text' },
         { name: 'discordId', label: 'Discord ID', type: 'text' },
-        { name: 'role', label: 'Запрошенная роль', type: 'text', placeholder: 'FIB / Cadet / ...' },
+        { name: 'role', label: 'Запрошенная роль', type: 'text', placeholder: 'FBI / Cadet / ...' },
         { name: 'date', label: 'Дата', type: 'date' },
         { name: 'status', label: 'Статус', type: 'select', options: ['Ожидает', 'Одобрено', 'Отклонено'] }
     ]},
@@ -531,10 +531,10 @@ const FORMS = {
         { name: 'password', label: 'Пароль', type: 'text' },
         { name: 'name', label: 'Ник в игре', type: 'text' },
         { name: 'role', label: 'Роль на сайте', type: 'select', options: ['agent', 'curator', 'deputy', 'leader'],
-          optionLabels: ['Сотрудник ФБР', 'Куратор', 'Зам. директора', 'Лидер'] },
+          optionLabels: ['Фибовец', 'Куратор', 'Зам. директора', 'Лидер'] },
         { name: 'department', label: 'Отдел (для куратора)', type: 'select',
           options: ['', 'id', 'inv', 'ciu', 'training'],
-          optionLabels: ['—', 'ID', 'HRT', 'CIU',] }
+          optionLabels: ['—', 'ID', 'Следственный', 'CIU', 'Обучение'] }
     ]}
 };
 
@@ -721,7 +721,7 @@ async function deleteItem(section, index) {
 
 
 /* ========== THEME / PERSONALIZE ========== */
-const THEME_KEY = 'fib_winslow14_theme';
+const THEME_KEY = 'fbi_winslow14_theme';
 
 const THEME_DEFAULTS = {
     theme: 'default',
