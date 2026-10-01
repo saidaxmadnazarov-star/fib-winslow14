@@ -1,5 +1,5 @@
 /**
- * FIB Winslow 14 — Access, Ranks, Departments
+ * FBI Winslow 14 — Access, Ranks, Departments
  */
 
 const ACCESS_USERS = [
@@ -14,29 +14,29 @@ const ACCESS_USERS = [
 ];
 
 const ROLE_LABELS = {
-    agent: "Сотрудник ФБР",
+    agent: "Фибовец",
     curator: "Куратор отдела",
     deputy: "Зам. директора",
     leader: "Лидер"
 };
 
 const RANKS = [
-    { id: "cadet", name: "Стажер I", level: 1 },
-    { id: "cadet", name: "Стажер II", level: 2 },
-    { id: "junior", name: "Стажер III", level: 3 },
-    { id: "agent", name: "Агент", level: 4 },
-    { id: "senior", name: "Старший агент", level: 5 },
-    { id: "special", name: "Специальный агент", level: 6 },
-    { id: "supervisor", name: "Супервайзер", level: 7 },
-    { id: "asstdirector", name: "Пом. директора", level: 8 },
-    { id: "deputy", name: "Зам. директора", level: 9 },
-    { id: "director", name: "Директор", level: 10 }
+    { id: "cadet", name: "Кадет", level: 1 },
+    { id: "junior", name: "Младший агент", level: 2 },
+    { id: "agent", name: "Агент", level: 3 },
+    { id: "senior", name: "Старший агент", level: 4 },
+    { id: "special", name: "Специальный агент", level: 5 },
+    { id: "supervisor", name: "Супервайзер", level: 6 },
+    { id: "asstdirector", name: "Пом. директора", level: 7 },
+    { id: "deputy", name: "Зам. директора", level: 8 },
+    { id: "director", name: "Директор", level: 9 }
 ];
 
 const DEPARTMENTS = {
     id: { id: "id", name: "Internal Division (ID)", icon: "🔍", short: "ID" },
-    inv: { id: "inv", name: "HRT", icon: "📂", short: "HRT" },
+    inv: { id: "inv", name: "Следственный отдел", icon: "📂", short: "INV" },
     ciu: { id: "ciu", name: "CIU", icon: "🕵️", short: "CIU" },
+    training: { id: "training", name: "Отдел обучения", icon: "🎓", short: "TRN" },
     academy: { id: "academy", name: "Академия", icon: "🏫", short: "ACD" }
 };
 
