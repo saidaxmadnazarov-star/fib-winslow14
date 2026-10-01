@@ -10,7 +10,7 @@ let cache = null;
 let githubSha = null; // SHA файла data.json для commit через API
 
 const DEFAULT_DATA = {
-    news: [{ title: 'Система FIB Winslow 14 запущена', body: 'Данные в data/data.json — правь руками на GitHub.', author: 'System', date: '30.09.2026' }],
+    news: [{ title: 'Система FBI Winslow 14 запущена', body: 'Данные в data/data.json — правь руками на GitHub.', author: 'System', date: '30.09.2026' }],
     members: [],
     callsigns: [],
     rankHistory: [],
@@ -443,7 +443,7 @@ const FORMS = {
         { name: 'status', label: 'Статус', type: 'select', options: ['Активен', 'Стажировка', 'Уволен'] }
     ]},
     callsign: { title: 'Выдать позывной', section: 'callsigns', dataKey: 'callsigns', fields: [
-        { name: 'callsign', label: 'Позывной', type: 'text', placeholder: 'FIB-01' },
+        { name: 'callsign', label: 'Позывной', type: 'text', placeholder: 'FBI-01' },
         { name: 'nick', label: 'Ник', type: 'text' },
         { name: 'department', label: 'Отдел', type: 'select', options: ['', ...deptOptions], optionLabels: ['—', ...Object.values(DEPARTMENTS).map(d => d.name)] },
         { name: 'from', label: 'Выдал', type: 'text' },
@@ -531,10 +531,10 @@ const FORMS = {
         { name: 'password', label: 'Пароль', type: 'text' },
         { name: 'name', label: 'Ник в игре', type: 'text' },
         { name: 'role', label: 'Роль на сайте', type: 'select', options: ['agent', 'curator', 'deputy', 'leader'],
-          optionLabels: ['Фибовец', 'Куратор', 'Зам. директора', 'Лидер'] },
+          optionLabels: ['Сотрудник ФБР', 'Куратор', 'Зам. директора', 'Лидер'] },
         { name: 'department', label: 'Отдел (для куратора)', type: 'select',
           options: ['', 'id', 'inv', 'ciu', 'training'],
-          optionLabels: ['—', 'ID', 'Следственный', 'CIU', 'Обучение'] }
+          optionLabels: ['—', 'ID', 'HRT', 'CIU',] }
     ]}
 };
 
