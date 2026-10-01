@@ -29,5 +29,5 @@ const GITHUB = {
     repo: "fib-winslow14",
     branch: "main",
     path: "data/data.json",
-    token: "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"
+    token: "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"
 };
