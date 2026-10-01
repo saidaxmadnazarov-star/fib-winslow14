@@ -692,3 +692,217 @@ body.no-anim * { animation: none !important; transition: none !important; }
 }
 .theme-check input { accent-color: var(--accent); }
 .leader-only.hidden { display: none !important; }
+
+/* ========== SIDEBAR LAYOUT ========== */
+.app {
+    display: flex;
+    flex-direction: row;
+    min-height: 100vh;
+    background: transparent;
+}
+.sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    background: rgba(18, 24, 31, 0.92);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    z-index: 50;
+    transition: width 0.2s ease, margin 0.2s ease;
+}
+.sidebar.collapsed { width: 72px; }
+.sidebar.collapsed .nav-label,
+.sidebar.collapsed .nav-group-label,
+.sidebar.collapsed .logo-text { display: none; }
+.sidebar.collapsed .nav-btn { justify-content: center; padding: 10px; }
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 14px;
+    border-bottom: 1px solid var(--border);
+}
+.sidebar .nav {
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px 8px 24px;
+    gap: 2px;
+    border: none;
+    background: transparent;
+    flex: 1;
+}
+.nav-group-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-muted);
+    padding: 12px 10px 6px;
+    opacity: 0.8;
+}
+.sidebar .nav-btn {
+    width: 100%;
+    justify-content: flex-start;
+    border: 1px solid transparent;
+}
+.sidebar-toggle {
+    margin: 8px;
+    padding: 8px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 14px;
+}
+.sidebar-toggle:hover { color: var(--text); border-color: var(--accent); }
+.main-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 100vh;
+    background: transparent;
+}
+.header {
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(10px);
+}
+.header-page-title { font-weight: 600; font-size: 15px; }
+.mobile-menu-btn { display: none; }
+.content {
+    background: transparent;
+}
+.footer {
+    background: rgba(18, 24, 31, 0.85);
+}
+
+/* Background layer */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background: var(--bg-dark);
+    background-size: cover;
+    background-position: center;
+    transition: background 0.3s ease;
+}
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: transparent;
+}
+body.bg-dim::after { background: rgba(0,0,0,0.45); }
+body.bg-blur::before { filter: blur(6px); transform: scale(1.05); }
+
+body.bg-deep::before { background: #06080c; }
+body.bg-navy::before { background: #0a1628; }
+body.bg-graphite::before { background: #12151a; }
+body.bg-gradient-blue::before {
+    background: radial-gradient(ellipse at 20% 0%, #1e3a5f 0%, #0b0f14 55%);
+}
+body.bg-gradient-purple::before {
+    background: radial-gradient(ellipse at 80% 10%, #2e1065 0%, #0b0f14 50%);
+}
+body.bg-gradient-fire::before {
+    background: radial-gradient(ellipse at 50% 100%, #7c2d12 0%, #0b0f14 55%);
+}
+body.bg-gradient-aurora::before {
+    background:
+        radial-gradient(ellipse at 10% 20%, rgba(56,189,248,0.25), transparent 40%),
+        radial-gradient(ellipse at 90% 10%, rgba(167,139,250,0.2), transparent 40%),
+        radial-gradient(ellipse at 50% 90%, rgba(52,211,153,0.15), transparent 40%),
+        #0b0f14;
+}
+body.bg-mesh::before {
+    background-color: #0b0f14;
+    background-image:
+        linear-gradient(rgba(59,130,246,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,130,246,0.06) 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+body.bg-custom::before {
+    background-image: var(--custom-bg);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Extra themes */
+body.theme-orange { --accent: #fb923c; --accent-hover: #f97316; }
+body.theme-orange .logo-icon { background: linear-gradient(135deg, #9a3412, #fb923c); }
+body.theme-orange .nav-btn.active { background: rgba(251,146,60,0.15); color: #fdba74; border-color: rgba(251,146,60,0.35); }
+body.theme-lime { --accent: #a3e635; --accent-hover: #84cc16; }
+body.theme-lime .logo-icon { background: linear-gradient(135deg, #3f6212, #a3e635); }
+body.theme-lime .nav-btn.active { background: rgba(163,230,53,0.15); color: #bef264; border-color: rgba(163,230,53,0.35); }
+body.theme-indigo { --accent: #6366f1; --accent-hover: #4f46e5; }
+body.theme-indigo .logo-icon { background: linear-gradient(135deg, #312e81, #6366f1); }
+body.theme-indigo .nav-btn.active { background: rgba(99,102,241,0.15); color: #a5b4fc; border-color: rgba(99,102,241,0.35); }
+body.theme-pink { --accent: #ec4899; --accent-hover: #db2777; }
+body.theme-pink .logo-icon { background: linear-gradient(135deg, #9d174d, #ec4899); }
+body.theme-pink .nav-btn.active { background: rgba(236,72,153,0.15); color: #f9a8d4; border-color: rgba(236,72,153,0.35); }
+
+/* Extra name gradients */
+.user-name.name-grad-fire {
+    background: linear-gradient(90deg, #ef4444, #f97316, #fbbf24);
+    -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 600;
+}
+.user-name.name-grad-ocean {
+    background: linear-gradient(90deg, #0ea5e9, #2563eb, #7c3aed);
+    -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 600;
+}
+.user-name.name-grad-sunset {
+    background: linear-gradient(90deg, #f43f5e, #fb923c, #fbbf24);
+    -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 600;
+}
+.user-name.name-grad-mint {
+    background: linear-gradient(90deg, #6ee7b7, #34d399, #14b8a6);
+    -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 600;
+}
+.user-name.name-grad-purple {
+    background: linear-gradient(90deg, #c084fc, #a855f7, #7c3aed);
+    -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 600;
+}
+.user-name.name-grad-silver {
+    background: linear-gradient(90deg, #e2e8f0, #94a3b8, #f8fafc);
+    -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 600;
+}
+
+body.nav-pill .nav-btn.active {
+    border-radius: 999px;
+    background: rgba(59,130,246,0.2);
+}
+body.nav-border .nav-btn.active {
+    border: 1px solid var(--accent);
+    background: transparent;
+}
+
+.theme-file, .theme-input {
+    width: 100%;
+    margin-top: 6px;
+    padding: 8px 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+}
+
+@media (max-width: 900px) {
+    .sidebar {
+        position: fixed;
+        left: 0; top: 0;
+        transform: translateX(-100%);
+        box-shadow: 8px 0 30px rgba(0,0,0,0.5);
+    }
+    .sidebar.open { transform: translateX(0); }
+    .mobile-menu-btn { display: inline-flex; }
+}
