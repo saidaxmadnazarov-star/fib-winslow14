@@ -38,10 +38,9 @@ function githubRawUrl() {
 }
 
 async function loadData() {
-    // 1) GitHub mode
+    // 1) GitHub mode — общие данные из репозитория
     if (typeof STORAGE_MODE !== 'undefined' && STORAGE_MODE === 'github') {
         try {
-            // API даёт SHA (нужен для записи) + content
             const headers = { 'Accept': 'application/vnd.github.v3+json' };
             if (GITHUB.token) headers['Authorization'] = 'Bearer ' + GITHUB.token;
             const res = await fetch(githubApiUrl(), { headers });
@@ -50,14 +49,15 @@ async function loadData() {
                 githubSha = json.sha;
                 const decoded = decodeURIComponent(escape(atob(json.content.replace(/\n/g, ''))));
                 cache = { ...DEFAULT_DATA, ...JSON.parse(decoded) };
-                setSyncStatus('github');
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(cache));
+                setSyncStatus(GITHUB.token ? 'github' : 'github-readonly');
                 return cache;
             }
-            // fallback: raw URL (только чтение)
             const raw = await fetch(githubRawUrl());
             if (raw.ok) {
                 cache = { ...DEFAULT_DATA, ...await raw.json() };
-                setSyncStatus('github');
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(cache));
+                setSyncStatus('github-readonly');
                 return cache;
             }
             console.warn('GitHub load failed', res.status);
@@ -68,25 +68,22 @@ async function loadData() {
         }
     }
 
-    // 2) Локальный data/data.json (если открыто с хостинга / рядом с index.html)
+    // 2) LOCAL mode: сначала localStorage (чтобы правки с сайта не пропадали)
     try {
-        const localFile = await fetch('data/data.json?t=' + Date.now());
-        if (localFile.ok) {
-            cache = { ...DEFAULT_DATA, ...await localFile.json() };
-            // в local mode всё равно дублируем в localStorage для правок с сайта
-            if (STORAGE_MODE !== 'github') {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(cache));
-            }
-            setSyncStatus(STORAGE_MODE === 'github' ? 'github' : 'local');
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+            cache = { ...DEFAULT_DATA, ...JSON.parse(raw) };
+            setSyncStatus('local');
             return cache;
         }
     } catch (e) {}
 
-    // 3) localStorage
+    // 3) Файл data/data.json (стартовые данные)
     try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) {
-            cache = JSON.parse(raw);
+        const localFile = await fetch('data/data.json?t=' + Date.now());
+        if (localFile.ok) {
+            cache = { ...DEFAULT_DATA, ...await localFile.json() };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(cache));
             setSyncStatus('local');
             return cache;
         }
@@ -100,19 +97,26 @@ async function loadData() {
 
 async function saveData(data) {
     cache = data;
+    // Всегда сохраняем локально — чтобы после F5 ничего не пропадало
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (e) {
+        console.warn('localStorage save failed', e);
+        alert('Не удалось сохранить локально (переполнен кэш браузера?)');
+    }
 
-    // GitHub: commit через API (если есть токен)
+    // GitHub: commit через API (если режим github + есть токен)
     if (typeof STORAGE_MODE !== 'undefined' && STORAGE_MODE === 'github' && GITHUB.token) {
         try {
             const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
             const body = {
-                message: `FIB update by ${currentUser ? currentUser.name : 'system'}`,
+                message: 'FIB update by ' + (currentUser ? currentUser.name : 'system'),
                 content: content,
                 branch: GITHUB.branch
             };
             if (githubSha) body.sha = githubSha;
             const res = await fetch(
-                `https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}/contents/${GITHUB.path}`,
+                'https://api.github.com/repos/' + GITHUB.owner + '/' + GITHUB.repo + '/contents/' + GITHUB.path,
                 {
                     method: 'PUT',
                     headers: {
@@ -125,24 +129,32 @@ async function saveData(data) {
             );
             if (res.ok) {
                 const json = await res.json();
-                githubSha = json.content && json.content.sha ? json.content.sha : githubSha;
+                if (json.content && json.content.sha) githubSha = json.content.sha;
                 setSyncStatus('github');
                 return;
             }
-            console.warn('GitHub save failed', await res.text());
+            const errText = await res.text();
+            console.warn('GitHub save failed', res.status, errText);
             setSyncStatus('error');
+            if (res.status === 401 || res.status === 403) {
+                alert('GitHub: нет доступа (проверь токен и права repo). Данные сохранены локально.');
+            } else if (res.status === 409) {
+                alert('GitHub: конфликт версий. Обнови страницу (Ctrl+F5) и попробуй снова. Локально сохранено.');
+            } else {
+                alert('GitHub: ошибка сохранения (' + res.status + '). Данные сохранены локально.');
+            }
+            return;
         } catch (e) {
             console.warn('GitHub save error', e);
             setSyncStatus('error');
+            alert('GitHub: сеть/ошибка. Данные сохранены локально.');
+            return;
         }
     }
 
-    // Всегда пишем localStorage как запасной вариант
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     if (STORAGE_MODE === 'github' && !GITHUB.token) {
-        // Режим github без токена: с сайта не пишем в репо — только local + подсказка
         setSyncStatus('github-readonly');
-    } else if (STORAGE_MODE !== 'github') {
+    } else {
         setSyncStatus('local');
     }
 }
@@ -525,6 +537,7 @@ function closeModal() {
 
 async function submitModal() {
     if (!currentForm) return;
+    try {
     const values = {};
     currentForm.fields.forEach(f => {
         const el = document.getElementById('field-' + f.name);
@@ -535,7 +548,7 @@ async function submitModal() {
         if (!isNaN(d)) values.date = d.toLocaleDateString('ru-RU');
     }
     if (currentForm.dataKey === 'news' || currentForm.dataKey === 'reports') {
-        values.author = currentUser.name;
+        values.author = (currentUser && currentUser.name) ? currentUser.name : 'Unknown';
         if (!values.date) values.date = new Date().toLocaleDateString('ru-RU');
     }
 
@@ -562,6 +575,10 @@ async function submitModal() {
     await saveData(data);
     renderAll();
     closeModal();
+    } catch (e) {
+        console.error(e);
+        alert('Ошибка при сохранении: ' + (e.message || e));
+    }
 }
 
 function editItem(section, index) {
