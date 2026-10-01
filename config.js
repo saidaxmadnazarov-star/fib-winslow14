@@ -22,12 +22,12 @@
  * Без токена сайт только читает data.json, пишет — руками.
  */
 
-const STORAGE_MODE = "local"; // "local" | "github"
+const STORAGE_MODE = "github"; // "local" | "github"
 
 const GITHUB = {
-    owner: "YOUR_GITHUB_USERNAME",
+    owner: "saidaxmadnazarov-star",
     repo: "fib-winslow14",
     branch: "main",
     path: "data/data.json",
-    token: ""
+    token: "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"
 };
