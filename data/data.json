@@ -1,0 +1,34 @@
+{
+  "news": [
+    {
+      "title": "Система FIB Winslow 14 запущена",
+      "body": "Все модули активны: состав, позывные, ранги, академия, обзвоны, отчёты.\nДанные хранятся в data/data.json — можно править руками на GitHub.",
+      "author": "System",
+      "date": "30.09.2026"
+    }
+  ],
+  "members": [],
+  "callsigns": [],
+  "rankHistory": [],
+  "academyList": [],
+  "academyApps": [],
+  "roleRequests": [],
+  "interviews": [],
+  "reports": [],
+  "recommendations": [
+    {
+      "nick": "John_Doe",
+      "id": "15234",
+      "from": "Agent_Smith",
+      "date": "28.09.2026",
+      "comment": "Хорошие знания",
+      "status": "Одобрено"
+    }
+  ],
+  "recruitments": [],
+  "registry": [],
+  "questionnaires": [],
+  "blRecruitments": [],
+  "blId": [],
+  "accounts": []
+}
