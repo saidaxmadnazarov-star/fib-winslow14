@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIB | Winslow 14 — Arizona RP</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="login-screen" class="login-screen">
+        <div class="login-card">
+            <div class="login-logo">
+                <div class="logo-icon large">FIB</div>
+                <h1>Federal Investigation Bureau</h1>
+                <p>Winslow 14 • Arizona RP</p>
+            </div>
+            <form id="login-form" class="login-form" autocomplete="off">
+                <div class="form-group">
+                    <label for="login-user">Логин</label>
+                    <input type="text" id="login-user" placeholder="Введите логин" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-pass">Пароль</label>
+                    <input type="password" id="login-pass" placeholder="Введите пароль" required>
+                </div>
+                <div id="login-error" class="login-error hidden"></div>
+                <button type="submit" class="btn btn-primary btn-full">Войти</button>
+            </form>
+            <div class="login-hint">
+                <p>Доступ только для сотрудников FIB</p>
+                <p class="login-hint-small">Учётки — в <code>access.js</code></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="app" class="app hidden">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="logo-icon">FIB</div>
+                <div class="logo-text">
+                    <span class="logo-title">FIB Winslow 14</span>
+                    <span class="logo-sub">Arizona RP</span>
+                </div>
+            </div>
+            <nav class="nav" id="main-nav">
+                <div class="nav-group-label">Основное</div>
+                <button class="nav-btn active" data-tab="news"><span class="nav-icon">📰</span><span class="nav-label">Новости</span></button>
+                <button class="nav-btn" data-tab="members"><span class="nav-icon">👥</span><span class="nav-label">Состав</span></button>
+                <button class="nav-btn" data-tab="callsigns"><span class="nav-icon">📡</span><span class="nav-label">Позывные</span></button>
+                <button class="nav-btn" data-tab="ranks"><span class="nav-icon">⭐</span><span class="nav-label">Ранги</span></button>
+                <button class="nav-btn" data-tab="academy"><span class="nav-icon">🏫</span><span class="nav-label">Академия</span></button>
+                <button class="nav-btn" data-tab="interviews"><span class="nav-icon">🎤</span><span class="nav-label">Обзвоны</span></button>
+                <button class="nav-btn" data-tab="reports"><span class="nav-icon">📄</span><span class="nav-label">Отчёты</span></button>
+                <div class="nav-group-label">Реестры</div>
+                <button class="nav-btn" data-tab="recommendations"><span class="nav-icon">📋</span><span class="nav-label">Реком. ID</span></button>
+                <button class="nav-btn" data-tab="recruitments"><span class="nav-icon">🤝</span><span class="nav-label">Вербовки</span></button>
+                <button class="nav-btn" data-tab="registry"><span class="nav-icon">🏛️</span><span class="nav-label">Проверки</span></button>
+                <button class="nav-btn" data-tab="questionnaires"><span class="nav-icon">📝</span><span class="nav-label">Анкеты</span></button>
+                <button class="nav-btn" data-tab="bl-recruitments"><span class="nav-icon">🚫</span><span class="nav-label">ЧС Верб.</span></button>
+                <button class="nav-btn" data-tab="bl-id"><span class="nav-icon">⛔</span><span class="nav-label">ЧС ID</span></button>
+                <div class="nav-group-label">Отделы</div>
+                <button class="nav-btn" data-tab="dept-id"><span class="nav-icon">🔍</span><span class="nav-label">ID</span></button>
+                <button class="nav-btn" data-tab="dept-inv"><span class="nav-icon">📂</span><span class="nav-label">Следственный</span></button>
+                <button class="nav-btn" data-tab="dept-ciu"><span class="nav-icon">🕵️</span><span class="nav-label">CIU</span></button>
+                <button class="nav-btn" data-tab="dept-training"><span class="nav-icon">🎓</span><span class="nav-label">Обучение</span></button>
+                <div class="nav-group-label">Настройки</div>
+                <button class="nav-btn" data-tab="personalize"><span class="nav-icon">🎨</span><span class="nav-label">Оформление</span></button>
+                <button class="nav-btn leader-only hidden" data-tab="accounts"><span class="nav-icon">🔑</span><span class="nav-label">Аккаунты</span></button>
+            </nav>
+            <button type="button" class="sidebar-toggle" id="sidebar-toggle" title="Свернуть">«</button>
+        </aside>
+        <div class="main-wrap">
+        <header class="header">
+            <div class="header-left">
+                <button type="button" class="btn btn-outline btn-sm mobile-menu-btn" id="mobile-menu-btn">☰</button>
+                <span class="header-page-title" id="header-page-title">Новости</span>
+            </div>
+            <div class="header-right">
+                <div id="sync-status" class="sync-badge" title="Статус синхронизации">Local</div>
+                <div class="status-badge"><span class="status-dot"></span>Онлайн</div>
+                <div class="user-badge">
+                    <span class="user-name name-gradient" id="header-name">—</span>
+                    <span class="user-role" id="header-role">—</span>
+                </div>
+                <button class="btn btn-outline btn-sm" id="btn-logout">Выйти</button>
+            </div>
+        </header>
+        <main class="content">
+
+            <!-- NEWS -->
+            <section id="news" class="tab-panel active">
+                <div class="panel-header">
+                    <h1>Новости FIB</h1>
+                    <p class="panel-desc">Официальные объявления</p>
+                    <button class="btn btn-primary perm-add" data-section="news" onclick="openModal('news')">+ Опубликовать</button>
+                </div>
+                <div class="news-list" id="news-list"></div>
+            </section>
+
+            <!-- MEMBERS: nicks, discord, departments, qualifications -->
+            <section id="members" class="tab-panel">
+                <div class="panel-header">
+                    <h1>Состав / Привязки</h1>
+                    <p class="panel-desc">Ники, Discord, отделы, квалификации</p>
+                    <button class="btn btn-primary perm-add" data-section="members" onclick="openModal('member')">+ Добавить сотрудника</button>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>№</th><th>Игровой ник</th><th>Позывной</th><th>Ранг</th><th>Отдел</th>
+                                <th>Discord</th><th>Квал. отдела</th><th>Квал. ранга</th><th>Статус</th><th class="th-actions">Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="members-tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- CALLSIGNS -->
+            <section id="callsigns" class="tab-panel">
+                <div class="panel-header">
+                    <h1>Система позывных</h1>
+                    <p class="panel-desc">Выдача и учёт позывных</p>
+                    <button class="btn btn-primary perm-add" data-section="callsigns" onclick="openModal('callsign')">+ Выдать позывной</button>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>№</th><th>Позывной</th><th>Ник</th><th>Отдел</th><th>Выдал</th><th>Дата</th><th class="th-actions">Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="callsigns-tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- RANKS -->
+            <section id="ranks" class="tab-panel">
+                <div class="panel-header">
+                    <h1>Система рангов</h1>
+                    <p class="panel-desc">Выдача и история рангов</p>
+                    <button class="btn btn-primary perm-add" data-section="ranks" onclick="openModal('rank')">+ Выдать ранг</button>
+                </div>
+                <div class="ranks-ref">
+                    <h3>Справочник рангов</h3>
+                    <div class="ranks-grid" id="ranks-ref"></div>
+                </div>
+                <div class="table-wrapper" style="margin-top:16px">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>№</th><th>Ник</th><th>Ранг</th><th>Выдал</th><th>Дата</th><th>Причина</th><th class="th-actions">Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ranks-tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ACADEMY -->
+            <section id="academy" class="tab-panel">
+                <div class="panel-header">
+                    <h1>Академия</h1>
+                    <p class="panel-desc">Списки, заявки, регистрация через запрос роли</p>
+                </div>
+                <div class="sub-tabs">
+                    <button class="btn btn-outline filter-btn active" data-sub="academy-list">Список академии</button>
+                    <button class="btn btn-outline filter-btn" data-sub="academy-apps">Заявки</button>
+                    <button class="btn btn-outline filter-btn" data-sub="academy-role">Запрос роли</button>
+                </div>
+
+                <div id="academy-list" class="sub-panel">
+                    <div class="panel-header" style="margin-top:16px">
+                        <button class="btn btn-primary perm-add" data-section="academy" onclick="openModal('academyMember')">+ В список академии</button>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr><th>№</th><th>Ник</th><th>Discord</th><th>Этап</th><th>Куратор</th><th>Дата</th><th class="th-actions">Действия</th></tr>
+                            </thead>
+                            <tbody id="academy-list-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="academy-apps" class="sub-panel hidden">
+                    <div class="panel-header" style="margin-top:16px">
+                        <button class="btn btn-primary perm-add" data-section="academy" onclick="openModal('academyApp')">+ Заявка в академию</button>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr><th>№</th><th>Ник</th><th>Discord</th><th>Опыт</th><th>Дата</th><th>Статус</th><th class="th-actions">Действия</th></tr>
+                            </thead>
+                            <tbody id="academy-apps-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="academy-role" class="sub-panel hidden">
+                    <div class="panel-header" style="margin-top:16px">
+                        <button class="btn btn-primary perm-add" data-section="academy" onclick="openModal('roleRequest')">+ Запрос роли</button>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr><th>№</th><th>Ник</th><th>Discord ID</th><th>Запрошенная роль</th><th>Дата</th><th>Статус</th><th class="th-actions">Действия</th></tr>
+                            </thead>
+                            <tbody id="role-req-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- INTERVIEWS -->
+            <section id="interviews" class="tab-panel">
+                <div class="panel-header">
+                    <h1>Обзвоны / Вербовки</h1>
+                    <p class="panel-desc">Загрузка записей и материалов обзвонов</p>
+                    <button class="btn btn-primary perm-add" data-section="interviews" onclick="openModal('interview')">+ Добавить обзвон</button>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>№</th><th>Кандидат</th><th>Тип</th><th>Дата</th><th>Проводил</th><th>Ссылка / файл</th><th>Статус</th><th class="th-actions">Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="interviews-tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- REPORTS -->
+            <section id="reports" class="tab-panel">
+                <div class="panel-header">
+                    <h1>Отчёты о проведении</h1>
+                    <p class="panel-desc">Отчёты по обзвонам, мероприятиям, проверкам</p>
+                    <button class="btn btn-primary perm-add" data-section="reports" onclick="openModal('report')">+ Новый отчёт</button>
+                </div>
+                <div class="news-list" id="reports-list"></div>
+            </section>
+
+            <!-- RECOMMENDATIONS -->
+            <section id="recommendations" class="tab-panel">
+                <div class="panel-header">
+                    <h1>Рекомендации от ID</h1>
+                    <p class="panel-desc">Рекомендации Internal Division</p>
+                    <button class="btn btn-primary perm-add" data-section="recommendations" onclick="openModal('rec')">+ Добавить</button>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead><tr><th>№</th><th>ФИО / Ник</th><th>ID</th><th>Кто рекомендовал</th><th>Дата</th><th>Комментарий</th><th>Статус</th><th class="th-actions">Действия</th></tr></thead>
+                        <tbody id="rec-tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- RECRUITMENTS -->
+            <section id="recruitments" class="tab-panel">
+                <div class="panel-header">
+                    <h1>Вербовки</h1>
+                    <p class="panel-desc">Процессы вербовки в FIB</p>
+                    <button class="btn btn-primary perm-add" data-section="recruitments" onclick="openModal('recruit')">+ Новая вербовка</button>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead><tr><th>№</th><th>Кандидат</th><th>ID</th><th>Вербовщик</th><th>Дата</th><th>Этап</th><th>Статус</th><th class="th-actions">Действия</th></tr></thead>
+                        <tbody id="recruit-tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- REGISTRY -->
+            <section id="registry" class="tab-panel">
+                <div class="panel-header">
+                    <h1>Реестр проверок гос. организаций</h1>
+                    <p class="panel-desc">Проверки гос. структур</p>
+                    <button class="btn btn-primary perm-add" data-section="registry" onclick="openModal('registry')">+ Добавить</button>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead><tr><th>№</th><th>Организация</th><th>Тип</th><th>Ответственный</th><th>Дата</th><th>Результат</th><th>Статус</th><th class="th-actions">Действия</th></tr></thead>
+                        <tbody id="registry-tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- QUESTIONNAIRES -->
+            <section id="questionnaires" class="tab-panel">
+                <div class="panel-header">
+                    <h1>Анкеты</h1>
+                    <p class="panel-desc">Гражданские / Полиция / CIU</p>
+                    <div class="filter-group">
+                        <button class="btn btn-outline filter-btn active" data-filter="all">Все</button>
+                        <button class="btn btn-outline filter-btn" data-filter="civilian">Гражданские</button>
+                        <button class="btn btn-outline filter-btn" data-filter="police">Полиция</button>
+                        <button class="btn btn-outline filter-btn" data-filter="ciu">CIU</button>
+                    </div>
+                    <button class="btn btn-primary perm-add" data-section="questionnaires" onclick="openModal('quest')">+ Анкета</button>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead><tr><th>№</th><th>ФИО / Ник</th><th>ID</th><th>Тип</th><th>Дата</th><th>Проверяющий</th><th>Статус</th><th class="th-actions">Действия</th></tr></thead>
+                        <tbody id="quest-tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- BL RECRUITMENTS -->
+            <section id="bl-recruitments" class="tab-panel">
+                <div class="panel-header">
+                    <h1>ЧС Вербовок</h1>
+                    <p class="panel-desc">Запрет на вербовку</p>
+                    <button class="btn btn-danger perm-add" data-section="bl-recruitments" onclick="openModal('blrec')">+ В ЧС</button>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead><tr><th>№</th><th>ФИО / Ник</th><th>ID</th><th>Причина</th><th>Кто добавил</th><th>Дата</th><th>Срок</th><th class="th-actions">Действия</th></tr></thead>
+                        <tbody id="blrec-tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- BL ID -->
+            <section id="bl-id" class="tab-panel">
+                <div class="panel-header">
+                    <h1>ЧС ID</h1>
+                    <p class="panel-desc">Заблокированные ID</p>
+                    <button class="btn btn-danger perm-add" data-section="bl-id" onclick="openModal('blid')">+ ID в ЧС</button>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead><tr><th>№</th><th>ID</th><th>Ник</th><th>Причина</th><th>Кто добавил</th><th>Дата</th><th>Срок</th><th class="th-actions">Действия</th></tr></thead>
+                        <tbody id="blid-tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- DEPTS -->
+            <section id="dept-id" class="tab-panel">
+                <div class="panel-header">
+                    <h1>🔍 Internal Division (ID)</h1>
+                    <p class="panel-desc">Сотрудники отдела — добавление с уровня куратора</p>
+                    <button class="btn btn-primary curator-add" data-dept="id" onclick="openDeptMemberModal('id')">+ Сотрудник в отдел</button>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>№</th><th>Ник</th><th>Позывной</th><th>Ранг</th><th>Discord</th><th>Квалификация</th><th>Статус</th><th class="th-actions">Действия</th></tr>
+                        </thead>
+                        <tbody id="dept-id-tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+            <section id="dept-inv" class="tab-panel">
+                <div class="panel-header">
+                    <h1>📂 Следственный отдел</h1>
+                    <p class="panel-desc">Сотрудники отдела — добавление с уровня куратора</p>
+                    <button class="btn btn-primary curator-add" data-dept="inv" onclick="openDeptMemberModal('inv')">+ Сотрудник в отдел</button>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>№</th><th>Ник</th><th>Позывной</th><th>Ранг</th><th>Discord</th><th>Квалификация</th><th>Статус</th><th class="th-actions">Действия</th></tr>
+                        </thead>
+                        <tbody id="dept-inv-tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+            <section id="dept-ciu" class="tab-panel">
+                <div class="panel-header">
+                    <h1>🕵️ CIU</h1>
+                    <p class="panel-desc">Сотрудники отдела — добавление с уровня куратора</p>
+                    <button class="btn btn-primary curator-add" data-dept="ciu" onclick="openDeptMemberModal('ciu')">+ Сотрудник в отдел</button>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>№</th><th>Ник</th><th>Позывной</th><th>Ранг</th><th>Discord</th><th>Квалификация</th><th>Статус</th><th class="th-actions">Действия</th></tr>
+                        </thead>
+                        <tbody id="dept-ciu-tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+            <section id="dept-training" class="tab-panel">
+                <div class="panel-header">
+                    <h1>🎓 Отдел обучения</h1>
+                    <p class="panel-desc">Сотрудники отдела — добавление с уровня куратора</p>
+                    <button class="btn btn-primary curator-add" data-dept="training" onclick="openDeptMemberModal('training')">+ Сотрудник в отдел</button>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>№</th><th>Ник</th><th>Позывной</th><th>Ранг</th><th>Discord</th><th>Квалификация</th><th>Статус</th><th class="th-actions">Действия</th></tr>
+                        </thead>
+                        <tbody id="dept-training-tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- PERSONALIZE -->
+            <section id="personalize" class="tab-panel">
+                <div class="panel-header">
+                    <h1>Оформление</h1>
+                    <p class="panel-desc">Тема, градиенты, фон и своё фото — сохраняется в браузере</p>
+                </div>
+                <div class="theme-grid">
+                    <div class="theme-card">
+                        <h3>Тема интерфейса</h3>
+                        <div class="theme-options" id="theme-presets">
+                            <button type="button" class="theme-swatch" data-theme="default"><span style="background:linear-gradient(135deg,#1e40af,#3b82f6)"></span>Синяя</button>
+                            <button type="button" class="theme-swatch" data-theme="crimson"><span style="background:linear-gradient(135deg,#7f1d1d,#ef4444)"></span>Красная</button>
+                            <button type="button" class="theme-swatch" data-theme="emerald"><span style="background:linear-gradient(135deg,#064e3b,#10b981)"></span>Изумруд</button>
+                            <button type="button" class="theme-swatch" data-theme="violet"><span style="background:linear-gradient(135deg,#4c1d95,#8b5cf6)"></span>Фиолет</button>
+                            <button type="button" class="theme-swatch" data-theme="amber"><span style="background:linear-gradient(135deg,#78350f,#f59e0b)"></span>Янтарь</button>
+                            <button type="button" class="theme-swatch" data-theme="cyan"><span style="background:linear-gradient(135deg,#155e75,#06b6d4)"></span>Циан</button>
+                            <button type="button" class="theme-swatch" data-theme="rose"><span style="background:linear-gradient(135deg,#881337,#f43f5e)"></span>Роза</button>
+                            <button type="button" class="theme-swatch" data-theme="slate"><span style="background:linear-gradient(135deg,#1e293b,#94a3b8)"></span>Сталь</button>
+                            <button type="button" class="theme-swatch" data-theme="orange"><span style="background:linear-gradient(135deg,#9a3412,#fb923c)"></span>Оранж</button>
+                            <button type="button" class="theme-swatch" data-theme="lime"><span style="background:linear-gradient(135deg,#3f6212,#a3e635)"></span>Лайм</button>
+                            <button type="button" class="theme-swatch" data-theme="indigo"><span style="background:linear-gradient(135deg,#312e81,#6366f1)"></span>Индиго</button>
+                            <button type="button" class="theme-swatch" data-theme="pink"><span style="background:linear-gradient(135deg,#9d174d,#ec4899)"></span>Пинк</button>
+                        </div>
+                    </div>
+                    <div class="theme-card">
+                        <h3>Градиент имени</h3>
+                        <div class="theme-options" id="name-gradients">
+                            <button type="button" class="theme-swatch" data-namegrad="none">Без</button>
+                            <button type="button" class="theme-swatch" data-namegrad="accent">Акцент</button>
+                            <button type="button" class="theme-swatch" data-namegrad="gold">Золото</button>
+                            <button type="button" class="theme-swatch" data-namegrad="rainbow">Радуга</button>
+                            <button type="button" class="theme-swatch" data-namegrad="neon">Неон</button>
+                            <button type="button" class="theme-swatch" data-namegrad="ice">Лёд</button>
+                            <button type="button" class="theme-swatch" data-namegrad="fire">Огонь</button>
+                            <button type="button" class="theme-swatch" data-namegrad="ocean">Океан</button>
+                            <button type="button" class="theme-swatch" data-namegrad="sunset">Закат</button>
+                            <button type="button" class="theme-swatch" data-namegrad="mint">Мята</button>
+                            <button type="button" class="theme-swatch" data-namegrad="purple">Пурпур</button>
+                            <button type="button" class="theme-swatch" data-namegrad="silver">Серебро</button>
+                        </div>
+                        <div class="theme-preview" id="name-preview">Director_Winslow</div>
+                    </div>
+                    <div class="theme-card">
+                        <h3>Стиль меню</h3>
+                        <div class="theme-options" id="nav-gradients">
+                            <button type="button" class="theme-swatch" data-navgrad="soft">Мягкий</button>
+                            <button type="button" class="theme-swatch" data-navgrad="bold">Яркий</button>
+                            <button type="button" class="theme-swatch" data-navgrad="glow">Свечение</button>
+                            <button type="button" class="theme-swatch" data-navgrad="underline">Подчёркивание</button>
+                            <button type="button" class="theme-swatch" data-navgrad="pill">Таблетка</button>
+                            <button type="button" class="theme-swatch" data-navgrad="border">Рамка</button>
+                        </div>
+                    </div>
+                    <div class="theme-card">
+                        <h3>Задний фон</h3>
+                        <div class="theme-options" id="bg-presets">
+                            <button type="button" class="theme-swatch" data-bg="default">Тёмный</button>
+                            <button type="button" class="theme-swatch" data-bg="deep">Глубокий</button>
+                            <button type="button" class="theme-swatch" data-bg="navy">Флот</button>
+                            <button type="button" class="theme-swatch" data-bg="graphite">Графит</button>
+                            <button type="button" class="theme-swatch" data-bg="gradient-blue">Градиент синий</button>
+                            <button type="button" class="theme-swatch" data-bg="gradient-purple">Градиент фиолет</button>
+                            <button type="button" class="theme-swatch" data-bg="gradient-fire">Градиент огонь</button>
+                            <button type="button" class="theme-swatch" data-bg="gradient-aurora">Аврора</button>
+                            <button type="button" class="theme-swatch" data-bg="mesh">Сетка</button>
+                        </div>
+                        <h3 style="margin-top:14px">Своё фото на фон</h3>
+                        <p class="theme-hint">JPG/PNG, лучше до 2 МБ. Хранится в этом браузере.</p>
+                        <input type="file" id="bg-file" accept="image/*" class="theme-file">
+                        <div class="theme-options" style="margin-top:8px">
+                            <button type="button" class="btn btn-outline btn-sm" id="bg-clear-photo">Убрать фото</button>
+                        </div>
+                        <label class="theme-hint" style="display:block;margin-top:8px">Или URL картинки:</label>
+                        <input type="url" id="bg-url" class="theme-input" placeholder="https://...">
+                        <button type="button" class="btn btn-primary btn-sm" id="bg-apply-url" style="margin-top:8px">Применить URL</button>
+                        <label class="theme-check" style="margin-top:12px"><input type="checkbox" id="opt-bg-blur"> Размыть фон</label>
+                        <label class="theme-check"><input type="checkbox" id="opt-bg-dim" checked> Затемнить фон</label>
+                    </div>
+                    <div class="theme-card">
+                        <h3>Дополнительно</h3>
+                        <label class="theme-check"><input type="checkbox" id="opt-compact"> Компактное меню</label>
+                        <label class="theme-check"><input type="checkbox" id="opt-animations" checked> Анимации</label>
+                        <button type="button" class="btn btn-outline" id="btn-reset-theme" style="margin-top:12px">Сбросить оформление</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ACCOUNTS (leader) -->
+            <section id="accounts" class="tab-panel">
+                <div class="panel-header">
+                    <h1>Аккаунты сотрудников</h1>
+                    <p class="panel-desc">Регистрация логинов для доступа к порталу (только лидер)</p>
+                    <button class="btn btn-primary" onclick="openModal('account')">+ Зарегистрировать</button>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>№</th><th>Логин</th><th>Ник</th><th>Роль</th><th>Отдел</th><th>Создал</th><th>Дата</th><th class="th-actions">Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="accounts-tbody"></tbody>
+                    </table>
+                </div>
+                <p class="theme-hint" style="margin-top:12px">Базовые учётки из access.js тоже работают. Здесь — дополнительные, созданные лидером.</p>
+            </section>
+
+        </main>
+        <footer class="footer">
+            <span>FIB Winslow 14 • Arizona RP</span>
+            <span class="footer-note">Только для сотрудников FIB</span>
+        </footer>
+        </div><!-- main-wrap -->
+    </div>
+
+    <div id="modal" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeModal()"></div>
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2 id="modal-title">Добавить</h2>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body" id="modal-body"></div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal()">Отмена</button>
+                <button class="btn btn-primary" onclick="submitModal()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="access.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
