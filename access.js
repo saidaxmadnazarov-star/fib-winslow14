@@ -14,7 +14,7 @@ const ACCESS_USERS = [
 ];
 
 const ROLE_LABELS = {
-    agent: "Фибовец",
+    agent: "Сотрудник ФБР",
     curator: "Куратор отдела",
     deputy: "Зам. директора",
     leader: "Лидер"
