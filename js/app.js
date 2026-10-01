@@ -217,6 +217,29 @@ function hasPerm(action, section) {
     return p[action] && p[action].includes(section);
 }
 
+/** Куратор своего отдела / зам / лидер */
+function canManageDept(deptId) {
+    if (!currentUser) return false;
+    if (currentUser.role === 'leader' || currentUser.role === 'deputy') return true;
+    if (currentUser.role === 'curator' && currentUser.department === deptId) return true;
+    // куратор без department — может все отделы
+    if (currentUser.role === 'curator' && !currentUser.department) return true;
+    return false;
+}
+
+function openDeptMemberModal(deptId) {
+    if (!canManageDept(deptId)) {
+        alert('Нет прав на этот отдел (нужен куратор отдела / зам / лидер)');
+        return;
+    }
+    openModal('member', null);
+    // после отрисовки формы выставить отдел
+    setTimeout(() => {
+        const el = document.getElementById('field-department');
+        if (el) el.value = deptId;
+    }, 0);
+}
+
 function applyPermissions() {
     document.querySelectorAll('.perm-add').forEach(btn => {
         const s = btn.dataset.section;
@@ -374,6 +397,30 @@ function renderAll() {
         <td>${esc(ROLE_LABELS[r.role] || r.role)}</td><td>${esc(deptName(r.department))}</td>
         <td>${esc(r.createdBy) || '—'}</td><td>${esc(r.date) || '—'}</td>
         <td>${currentUser && currentUser.role === 'leader' ? actionBtns('accounts', i) : '—'}</td>`);
+
+    // Department tables (filter members by department)
+    ['id', 'inv', 'ciu', 'training'].forEach(dep => {
+        const list = (d.members || []).map((m, i) => ({ ...m, _i: i })).filter(m => m.department === dep);
+        const tb = document.getElementById('dept-' + dep + '-tbody');
+        if (!tb) return;
+        tb.innerHTML = '';
+        list.forEach((r, n) => {
+            const tr = document.createElement('tr');
+            const canAct = canManageDept(dep);
+            tr.innerHTML = `
+                <td>${n + 1}</td><td>${esc(r.nick)}</td><td>${esc(r.callsign) || '—'}</td>
+                <td>${esc(rankName(r.rank))}</td><td>${esc(r.discord) || '—'}</td>
+                <td>${esc(r.deptQual) || '—'}</td><td>${badge(r.status || 'Активен')}</td>
+                <td>${canAct ? actionBtns('members', r._i) : '—'}</td>`;
+            tb.appendChild(tr);
+        });
+    });
+
+    // curator-add buttons visibility
+    document.querySelectorAll('.curator-add').forEach(btn => {
+        const dep = btn.dataset.dept;
+        btn.classList.toggle('hidden', !canManageDept(dep));
+    });
 }
 
 /* ========== FORMS ========== */
@@ -680,6 +727,10 @@ const THEME_DEFAULTS = {
     theme: 'default',
     nameGrad: 'none',
     navGrad: 'soft',
+    bg: 'default',
+    bgImage: '',
+    bgBlur: false,
+    bgDim: true,
     compact: false,
     animations: true
 };
@@ -699,16 +750,28 @@ function saveThemePrefs(p) {
 function applyTheme(prefs) {
     const p = prefs || loadThemePrefs();
     const body = document.body;
-    body.className = body.className
-        .split(/\s+/)
-        .filter(c => c && !c.startsWith('theme-') && !c.startsWith('nav-') && c !== 'compact-nav' && c !== 'no-anim')
-        .join(' ');
+    const keep = body.className.split(/\s+/).filter(c =>
+        c && !c.startsWith('theme-') && !c.startsWith('nav-') && !c.startsWith('bg-') &&
+        c !== 'compact-nav' && c !== 'no-anim' && c !== 'bg-dim' && c !== 'bg-blur' && c !== 'bg-custom'
+    );
+    body.className = keep.join(' ');
     if (p.theme && p.theme !== 'default') body.classList.add('theme-' + p.theme);
     if (p.navGrad === 'bold') body.classList.add('nav-bold');
     if (p.navGrad === 'glow') body.classList.add('nav-glow');
     if (p.navGrad === 'underline') body.classList.add('nav-underline');
+    if (p.navGrad === 'pill') body.classList.add('nav-pill');
+    if (p.navGrad === 'border') body.classList.add('nav-border');
     if (p.compact) body.classList.add('compact-nav');
     if (!p.animations) body.classList.add('no-anim');
+    if (p.bgBlur) body.classList.add('bg-blur');
+    if (p.bgDim !== false) body.classList.add('bg-dim');
+    if (p.bgImage) {
+        body.classList.add('bg-custom');
+        body.style.setProperty('--custom-bg', 'url(' + JSON.stringify(p.bgImage) + ')');
+    } else {
+        body.style.removeProperty('--custom-bg');
+        if (p.bg && p.bg !== 'default') body.classList.add('bg-' + p.bg);
+    }
 
     const nameEl = document.getElementById('header-name');
     if (nameEl) {
@@ -717,8 +780,8 @@ function applyTheme(prefs) {
     }
     const preview = document.getElementById('name-preview');
     if (preview) {
-        preview.className = 'theme-preview';
-        if (p.nameGrad && p.nameGrad !== 'none') preview.classList.add('name-grad-' + p.nameGrad, 'user-name');
+        preview.className = 'theme-preview user-name';
+        if (p.nameGrad && p.nameGrad !== 'none') preview.classList.add('name-grad-' + p.nameGrad);
         if (currentUser) preview.textContent = currentUser.name;
     }
     document.querySelectorAll('#theme-presets .theme-swatch').forEach(b => {
@@ -730,10 +793,19 @@ function applyTheme(prefs) {
     document.querySelectorAll('#nav-gradients .theme-swatch').forEach(b => {
         b.classList.toggle('active', b.dataset.navgrad === p.navGrad);
     });
+    document.querySelectorAll('#bg-presets .theme-swatch').forEach(b => {
+        b.classList.toggle('active', !p.bgImage && b.dataset.bg === (p.bg || 'default'));
+    });
     const c = document.getElementById('opt-compact');
     const a = document.getElementById('opt-animations');
+    const blur = document.getElementById('opt-bg-blur');
+    const dim = document.getElementById('opt-bg-dim');
     if (c) c.checked = !!p.compact;
     if (a) a.checked = p.animations !== false;
+    if (blur) blur.checked = !!p.bgBlur;
+    if (dim) dim.checked = p.bgDim !== false;
+    const urlInp = document.getElementById('bg-url');
+    if (urlInp && p.bgImage && p.bgImage.startsWith('http')) urlInp.value = p.bgImage;
 }
 
 function initThemeUI() {
@@ -762,24 +834,81 @@ function initThemeUI() {
             applyTheme(p);
         });
     });
-    const c = document.getElementById('opt-compact');
-    const a = document.getElementById('opt-animations');
-    if (c) c.addEventListener('change', () => {
+    document.querySelectorAll('#bg-presets .theme-swatch').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const p = loadThemePrefs();
+            p.bg = btn.dataset.bg;
+            p.bgImage = '';
+            saveThemePrefs(p);
+            applyTheme(p);
+        });
+    });
+    const file = document.getElementById('bg-file');
+    if (file) file.addEventListener('change', () => {
+        const f = file.files && file.files[0];
+        if (!f) return;
+        if (f.size > 2.5 * 1024 * 1024) {
+            alert('Файл слишком большой (макс. ~2 МБ)');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+            const p = loadThemePrefs();
+            p.bgImage = reader.result;
+            saveThemePrefs(p);
+            applyTheme(p);
+        };
+        reader.readAsDataURL(f);
+    });
+    const clearPhoto = document.getElementById('bg-clear-photo');
+    if (clearPhoto) clearPhoto.addEventListener('click', () => {
         const p = loadThemePrefs();
-        p.compact = c.checked;
+        p.bgImage = '';
+        saveThemePrefs(p);
+        applyTheme(p);
+        if (file) file.value = '';
+    });
+    const applyUrl = document.getElementById('bg-apply-url');
+    if (applyUrl) applyUrl.addEventListener('click', () => {
+        const url = (document.getElementById('bg-url').value || '').trim();
+        if (!url) return;
+        const p = loadThemePrefs();
+        p.bgImage = url;
         saveThemePrefs(p);
         applyTheme(p);
     });
+    const c = document.getElementById('opt-compact');
+    const a = document.getElementById('opt-animations');
+    const blur = document.getElementById('opt-bg-blur');
+    const dim = document.getElementById('opt-bg-dim');
+    if (c) c.addEventListener('change', () => {
+        const p = loadThemePrefs(); p.compact = c.checked; saveThemePrefs(p); applyTheme(p);
+    });
     if (a) a.addEventListener('change', () => {
-        const p = loadThemePrefs();
-        p.animations = a.checked;
-        saveThemePrefs(p);
-        applyTheme(p);
+        const p = loadThemePrefs(); p.animations = a.checked; saveThemePrefs(p); applyTheme(p);
+    });
+    if (blur) blur.addEventListener('change', () => {
+        const p = loadThemePrefs(); p.bgBlur = blur.checked; saveThemePrefs(p); applyTheme(p);
+    });
+    if (dim) dim.addEventListener('change', () => {
+        const p = loadThemePrefs(); p.bgDim = dim.checked; saveThemePrefs(p); applyTheme(p);
     });
     const reset = document.getElementById('btn-reset-theme');
     if (reset) reset.addEventListener('click', () => {
         saveThemePrefs({ ...THEME_DEFAULTS });
         applyTheme(THEME_DEFAULTS);
+        if (file) file.value = '';
+        const urlInp = document.getElementById('bg-url');
+        if (urlInp) urlInp.value = '';
+    });
+
+    const sideToggle = document.getElementById('sidebar-toggle');
+    if (sideToggle) sideToggle.addEventListener('click', () => {
+        document.getElementById('sidebar').classList.toggle('collapsed');
+    });
+    const mob = document.getElementById('mobile-menu-btn');
+    if (mob) mob.addEventListener('click', () => {
+        document.getElementById('sidebar').classList.toggle('open');
     });
 }
 
@@ -792,6 +921,13 @@ function initTabs() {
             btn.classList.add('active');
             const tab = document.getElementById(btn.dataset.tab);
             if (tab) tab.classList.add('active');
+            const title = document.getElementById('header-page-title');
+            if (title) {
+                const label = btn.querySelector('.nav-label');
+                title.textContent = label ? label.textContent : btn.dataset.tab;
+            }
+            const sb = document.getElementById('sidebar');
+            if (sb) sb.classList.remove('open');
         });
     });
 }
