@@ -22,8 +22,8 @@ const ROLE_LABELS = {
 
 const RANKS = [
     { id: "cadet", name: "Кадет", level: 1 },
-    { id: "junior", name: "Младший агент", level: 2 },
-    { id: "agent", name: "Агент", level: 3 },
+    { id: "cadet", name: "Кадет 2", level: 2 },
+    { id: "cadet", name: "Кадет 3", level: 3 },
     { id: "senior", name: "Старший агент", level: 4 },
     { id: "special", name: "Специальный агент", level: 5 },
     { id: "supervisor", name: "Супервайзер", level: 6 },
